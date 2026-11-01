@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "tM4m82su/oA=",
+  "success": true,
+  "projectFilePath": "C:\\Projects\\Sprint1Event\\EventService\\EventService.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Антон\\.nuget\\packages\\microsoft.aspnetcore.openapi\\9.0.22\\microsoft.aspnetcore.openapi.9.0.22.nupkg.sha512",
+    "C:\\Users\\Антон\\.nuget\\packages\\microsoft.openapi\\1.6.31\\microsoft.openapi.1.6.31.nupkg.sha512"
+  ],
+  "logs": []
+}
