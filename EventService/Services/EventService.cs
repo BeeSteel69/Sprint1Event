@@ -1,38 +1,64 @@
 ﻿using System;
 
-namespace SpaceEventService;
-
+namespace Sprint1;
+/// <summary>
+/// Класс сервис Event
+/// </summary>
 public class EventService : IEventService
 {
-    // Коллекция для работы с событиями
+    /// <summary>
+    /// Коллекция для работы с событиями
+    /// </summary>
     public static List<Event> _events= [];
 
-    //Конструктор
+    /// <summary>
+    /// Конструктор сервиса Event (по умолчанию)
+    /// </summary>
     public EventService() { }
+
+    /// <summary>
+    /// Конструктор сервиса Event
+    /// </summary>
+    /// <param name="events"></param>
     public EventService(List <Event> events)
     {
         _events = events;
     }
 
-    // Метод получения всех событий
+    /// <summary>
+    /// Метод получения всех событий
+    /// </summary>
+    /// <returns></returns>
     public List<Event> GetAllEvents()
     {
         return _events;
     }
 
-    // Метод получения события по id
+    /// <summary>
+    /// Метод получения события по id
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
     public Event? GetEventById(int id)
     {
         return _events.Find(e => e.Id == id);
     }
 
-    // Метод добавления события
+    /// <summary>
+    /// Метод добавления события
+    /// </summary>
+    /// <param name="newEvent"></param>
     public void CreateEvent(Event newEvent)
     {
         _events.Add(newEvent);
     }
 
-    // Метод изменения события
+    /// <summary>
+    /// Метод изменения события по ID
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="updateEvent"></param>
+    /// <exception cref="ArgumentException"></exception>
     public void UpdateEvent(int id, Event updateEvent)
     {
         var foundIndex = _events.FindIndex(e => e.Id == id);
@@ -43,7 +69,11 @@ public class EventService : IEventService
         else
             _events[foundIndex] = updateEvent;
     }
-    // Метод удаления события по id
+
+    /// <summary>
+    /// Метод удаления события по ID
+    /// </summary>
+    /// <param name="id"></param>
     public void DeleteEvent(int id)
     {
         var eventItem= _events[id];
