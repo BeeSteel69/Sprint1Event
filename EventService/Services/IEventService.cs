@@ -1,4 +1,6 @@
-﻿namespace Sprint1;
+﻿using FluentResults;
+
+namespace Sprint1;
 
 /// <summary>
 /// Интерфейс Event
@@ -19,21 +21,21 @@ public interface IEventService
     Event? GetEventById(int id);
 
     /// <summary>
-    /// Создать событие
+    /// Создать событие через Dto
     /// </summary>
-    /// <param name="newEvent"></param>
-    void CreateEvent(Event newEvent);
+    /// <param name="eventDto"></param>
+    Event CreateEvent(EventDto eventDto);
 
     /// <summary>
-    /// Обновить событие
+    /// Обновить событие через Dto
     /// </summary>
     /// <param name="id"></param>
-    /// <param name="updateEvent"></param>
-    void UpdateEvent(int id, Event updateEvent);
-    
+    /// <param name="eventDto"></param>
+    Result<Event> UpdateEvent(int id, EventDto eventDto);
+
     /// <summary>
     /// Удалить событие
     /// </summary>
     /// <param name="id"></param>
-    void DeleteEvent(int id);
+    bool DeleteEvent(int id);
 }

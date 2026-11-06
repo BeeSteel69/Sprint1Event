@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using FluentResults;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Sprint1;
 
@@ -21,9 +22,9 @@ public class EventsController(IEventService _eventsService) : ControllerBase
     }
 
     /// <summary>
-    /// Метод возвращает номер здания по индексу из коллекции
+    /// Метод возвращает событие по id
     /// </summary>
-    /// <param name="index">Параметр индекса, для получения номера здания</param>
+    /// <param name="id">Параметр индекса, для события</param>
     /// <response code="200">Возвращается JSON-структура ApiBaseResult с деталями ответа
     /// и HTTP статус-кодом 200 Ok в случае успеха</response>
     
@@ -51,11 +52,6 @@ public class EventsController(IEventService _eventsService) : ControllerBase
     [HttpPost]
     public IActionResult Create([FromBody] EventDto eventDto)
     {
-       
-        if (eventDto.EndAt <= eventDto.StartAt)
-        {
-            ModelState.AddModelError("", "Дата окончания (EndAt) должна быть строго позже даты начала (StartAt).");
-        }
         if (!ModelState.IsValid)
         {
             // Вернёт статус 400 Bad Request и JSON со списком ошибок
@@ -63,10 +59,16 @@ public class EventsController(IEventService _eventsService) : ControllerBase
         }
 
         // Добавляем событие
-        _eventsService.CreateEvent(new Event(eventDto.Title, eventDto.StartAt, eventDto.EndAt, description: eventDto.Description));
+        var newEvent = _eventsService.CreateEvent(eventDto);
 
+        if (newEvent == null)
+        {
+            //Вернёт статус 400 Bad Request
+            return BadRequest();
+        }
+        
         //Возвращаем 201
-        return new CreatedResult();
+        return CreatedAtAction(nameof(GetEvent), new { id = newEvent.Id }, newEvent);   
     }
 
     /// <summary>
@@ -75,37 +77,34 @@ public class EventsController(IEventService _eventsService) : ControllerBase
     /// <param name="id"></param>
     /// <param name="eventDto"></param>
     /// <returns></returns>
-    [HttpPut("events/{id}")]
-    public ActionResult Update(int id,[FromBody] EventDto eventDto)
+    [HttpPut("{id:int}")]
+    public IActionResult Update(int id,[FromBody] EventDto eventDto)
     {
-        var eventItem = _eventsService.GetEventById(id);
-
-        if (eventItem == null)
-        {
-            // Возвращаем 404
-            return NotFound();
-        }
-
-        if (eventDto.EndAt <= eventDto.StartAt)
-        {
-            ModelState.AddModelError("", "Дата окончания (EndAt) должна быть строго позже даты начала (StartAt).");
-        }
+        //Валидность входных данных (Required)
         if (!ModelState.IsValid)
         {
             // Вернёт статус 400 Bad Request и JSON со списком ошибок
             return BadRequest(ModelState);
         }
 
-        // Меняем событие
-        eventItem.Title = eventDto.Title;
-        eventItem.Description = eventDto.Description;
-        eventItem.StartAt = eventDto.StartAt;
-        eventItem.EndAt = eventDto.EndAt;
+        //Обновляем событие
+        Result<Event> result = _eventsService.UpdateEvent(id, eventDto);
 
-        _eventsService.UpdateEvent(id, eventItem);
+        //Если всё ок - 200
+        if (result.IsSuccess)
+        {
+            return Ok(result.Value);
+        }
 
-        // Возвращаем 200
-        return Ok(eventItem);
+        //Если нет, то возвращаем ошибку
+        var error = result.Errors.FirstOrDefault();
+
+        return error switch
+        {
+            NotFoundError => NotFound(new { message = error.Message }),
+            BadRequestError => BadRequest(new { message = error.Message }),
+            _ => StatusCode(500, new { message = "Произошла внутренняя ошибка сервера." })
+        };
     }
 
     /// <summary>
@@ -116,18 +115,15 @@ public class EventsController(IEventService _eventsService) : ControllerBase
     [HttpDelete("{id:int}")]
     public IActionResult Delete(int id)
     {
-        var eventItem = _eventsService.GetEventById(id);
+        var result = _eventsService.DeleteEvent(id);
 
-        if (eventItem == null)
+        if (!result)
         {
-            // Возвращаем 404
-            return NotFound(); 
+            // Статус 404
+            return NotFound();
         }
 
-        // Удаляем событие
-        _eventsService.DeleteEvent(id);
-
-        // Возвращаем HTTP 200 OK
-        return new OkResult();
+        // Статус 204
+        return NoContent();
     }
 }

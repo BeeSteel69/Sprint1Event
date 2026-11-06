@@ -1,4 +1,6 @@
-﻿namespace Sprint1;
+﻿using System.Threading;
+
+namespace Sprint1;
 
 /// <summary>
 /// Класс Event(событие)
@@ -44,7 +46,7 @@ public class Event
     /// <param name="description"></param>
     public Event(string tittle,  DateTime startAt, DateTime endAt, string? description = "")
     { 
-        Id= _counter++;
+        Id= Interlocked.Increment(ref _counter); ;
         Title = tittle;
         Description = description;
         StartAt = startAt;

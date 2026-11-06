@@ -1,4 +1,6 @@
-﻿using System;
+﻿using FluentResults;
+using Microsoft.AspNetCore.Http.HttpResults;
+using System;
 
 namespace Sprint1;
 /// <summary>
@@ -9,21 +11,12 @@ public class EventService : IEventService
     /// <summary>
     /// Коллекция для работы с событиями
     /// </summary>
-    public static List<Event> _events= [];
+    private readonly List<Event> _events= [];
 
     /// <summary>
     /// Конструктор сервиса Event (по умолчанию)
     /// </summary>
     public EventService() { }
-
-    /// <summary>
-    /// Конструктор сервиса Event
-    /// </summary>
-    /// <param name="events"></param>
-    public EventService(List <Event> events)
-    {
-        _events = events;
-    }
 
     /// <summary>
     /// Метод получения всех событий
@@ -47,36 +40,89 @@ public class EventService : IEventService
     /// <summary>
     /// Метод добавления события
     /// </summary>
-    /// <param name="newEvent"></param>
-    public void CreateEvent(Event newEvent)
+    /// <param name="dto"></param>
+    public Event CreateEvent(EventDto dto)
     {
+        if(dto.EndAt <= dto.StartAt)
+        {
+            return null;
+        }
+
+        var newEvent = new Event(dto.Title, dto.StartAt.Value, dto.EndAt.Value, description: dto.Description);
+
         _events.Add(newEvent);
+
+        return newEvent;
     }
 
     /// <summary>
     /// Метод изменения события по ID
     /// </summary>
     /// <param name="id"></param>
-    /// <param name="updateEvent"></param>
+    /// <param name="dto"></param>
     /// <exception cref="ArgumentException"></exception>
-    public void UpdateEvent(int id, Event updateEvent)
+    public Result<Event> UpdateEvent(int id, EventDto dto)
     {
         var foundIndex = _events.FindIndex(e => e.Id == id);
         if (foundIndex == -1)
         {
-            throw new ArgumentException($"Событие с ID {id} не найдено.");
+            return Result.Fail<Event>(new NotFoundError($"Невозможно обновить несуществующее событие {id}"));
         }
-        else
-            _events[foundIndex] = updateEvent;
+       
+        if (dto.EndAt <= dto.StartAt)
+        {
+            // Добавление простой текстовой ошибки
+            return Result.Fail<Event>(new BadRequestError("Дата окончания (EndAt) должна быть строго позже даты начала (StartAt)"));
+        }
+
+        var newEvent = _events[foundIndex];
+        newEvent.Title = dto.Title;
+        newEvent.Description = dto.Description;
+        newEvent.StartAt = dto.StartAt.Value;
+        newEvent.EndAt = dto.EndAt.Value;
+
+        _events[foundIndex] = newEvent;
+
+        return Result.Ok(newEvent);             
     }
 
     /// <summary>
     /// Метод удаления события по ID
     /// </summary>
     /// <param name="id"></param>
-    public void DeleteEvent(int id)
+    public bool DeleteEvent(int id)
     {
-        var eventItem= _events[id];
+        var eventItem= _events.Find(e => e.Id == id);
+        if (eventItem == null)
+        {
+            return false;
+        }
+
         _events.Remove(eventItem);
+        return true;
     }
+}
+
+/// <summary>
+/// Кастомный класс ошибки NotFoundError
+/// </summary>
+public class NotFoundError : Error
+{
+    /// <summary>
+    /// Конструктор
+    /// </summary>
+    /// <param name="message"></param>
+    public NotFoundError(string message) : base(message) { }
+}
+
+/// <summary>
+/// Кастомный класс ошибки BadRequestError
+/// </summary>
+public class BadRequestError : Error
+{
+    /// <summary>
+    /// Конструктор
+    /// </summary>
+    /// <param name="message"></param>
+    public BadRequestError(string message) : base(message) { }
 }

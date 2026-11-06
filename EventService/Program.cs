@@ -4,23 +4,16 @@ using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Строка регистрации сервиса
-
-builder.Services.AddOpenApi();
 builder.Services.AddControllers();
-builder.Services.AddScoped<IEventService, EventService>();
+builder.Services.AddSingleton<IEventService, EventService>();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{    
-    c.SwaggerDoc("v1", new OpenApiInfo
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
     {
         Title = "My API",
         Version = "v1"
     });
-});
-builder.Services.AddSwaggerGen(options =>
-{
-    // Путь к XML-файлу с документацией
     var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
     options.IncludeXmlComments(xmlPath);

@@ -22,11 +22,11 @@ public class EventDto
     /// Дата начала события
     /// </summary>
     [Required(ErrorMessage = "Необходимо указать время начала события")]
-    public DateTime StartAt { get; set; }
+    public DateTime? StartAt { get; set; }
 
     /// <summary>
     /// Дата окончания события
     /// </summary>
     [Required(ErrorMessage = "Необходимо указать время окончания события")]
-    public DateTime EndAt { get; set; }
+    public DateTime? EndAt { get; set; }
 }
