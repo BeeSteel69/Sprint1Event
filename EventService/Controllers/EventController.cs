@@ -17,9 +17,14 @@ public class EventsController(IEventService _eventsService) : ControllerBase
     /// </summary>
     /// <returns></returns>
     [HttpGet]
-    public ActionResult<List<Event>> GetAllEvents([FromQuery] string? title, [FromQuery] DateTime? from, [FromQuery] DateTime? to)
+    public ActionResult<List<Event>> GetAllEvents(
+        [FromQuery] string? title, 
+        [FromQuery] DateTime? from, 
+        [FromQuery] DateTime? to,
+        [FromQuery] int page = 1, 
+        [FromQuery] int pageSize = 10)
     {
-        return Ok(_eventsService.GetAllEvents(title,from,to));
+        return Ok(_eventsService.GetAllEvents(title,from,to,page,pageSize));
     }
 
     /// <summary>

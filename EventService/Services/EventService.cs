@@ -22,7 +22,7 @@ public class EventService : IEventService
     /// Метод получения всех событий
     /// </summary>
     /// <returns></returns>
-    public List<Event> GetAllEvents(string? title, DateTime? from, DateTime? to)
+    public PaginatedResult<Event> GetAllEvents(string? title, DateTime? from, DateTime? to, int page, int pageSize)
     {
         var query = _events.AsEnumerable();
 
@@ -38,7 +38,12 @@ public class EventService : IEventService
         {
             query = query.Where(e => e.EndAt.Date <= to.Value.Date);
         }
-        return query.ToList();
+
+        var skip = (page - 1) * pageSize;
+        var total = query.Count();
+        query = query.Skip(skip).Take(pageSize);
+
+        return new PaginatedResult<Event> { Items = query.ToList(), TotalCount = total, Page = page, PageSize = pageSize };
     }
 
     /// <summary>

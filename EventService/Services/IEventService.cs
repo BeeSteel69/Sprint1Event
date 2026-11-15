@@ -1,5 +1,6 @@
 ﻿using FluentResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Sprint1;
 
@@ -12,7 +13,7 @@ public interface IEventService
     /// Получить все события
     /// </summary>
     /// <returns></returns>
-    List<Event> GetAllEvents(string? title, DateTime? from, DateTime? to);
+    PaginatedResult<Event> GetAllEvents(string? title, DateTime? from, DateTime? to, int page, int pageSize);
 
     /// <summary>
     /// Получить событие по ID
