@@ -1,6 +1,4 @@
-﻿using System.Threading;
-
-namespace Sprint1;
+﻿namespace Sprint1;
 
 /// <summary>
 /// Класс Event(событие)

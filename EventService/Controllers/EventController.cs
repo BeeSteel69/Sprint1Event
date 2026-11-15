@@ -1,6 +1,5 @@
 ﻿using FluentResults;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
 
 namespace Sprint1;
 
