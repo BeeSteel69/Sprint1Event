@@ -19,9 +19,12 @@ builder.Services.AddSwaggerGen(options =>
     options.IncludeXmlComments(xmlPath);
 });
 
+
 var app = builder.Build();
 
-if(app.Environment.IsDevelopment())
+app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
+
+if (app.Environment.IsDevelopment())
 {
     app.UseSwagger(options =>
     {
