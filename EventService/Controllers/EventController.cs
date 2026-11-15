@@ -1,5 +1,6 @@
 ﻿using FluentResults;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 
 namespace Sprint1;
 
@@ -16,9 +17,9 @@ public class EventsController(IEventService _eventsService) : ControllerBase
     /// </summary>
     /// <returns></returns>
     [HttpGet]
-    public ActionResult<List<Event>> GetAllEvents()
+    public ActionResult<List<Event>> GetAllEvents([FromQuery] string? title, [FromQuery] DateTime? from, [FromQuery] DateTime? to)
     {
-        return _eventsService.GetAllEvents();
+        return Ok(_eventsService.GetAllEvents(title,from,to));
     }
 
     /// <summary>
@@ -27,7 +28,6 @@ public class EventsController(IEventService _eventsService) : ControllerBase
     /// <param name="id">Параметр индекса, для события</param>
     /// <response code="200">Возвращается JSON-структура ApiBaseResult с деталями ответа
     /// и HTTP статус-кодом 200 Ok в случае успеха</response>
-    
     [Produces("application/json")]
     [HttpGet("{id:int}")]
     public ActionResult<Event> GetEvent(int id)

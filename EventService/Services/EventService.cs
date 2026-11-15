@@ -1,4 +1,6 @@
 ﻿using FluentResults;
+using Microsoft.Extensions.Logging;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Sprint1;
 /// <summary>
@@ -20,9 +22,23 @@ public class EventService : IEventService
     /// Метод получения всех событий
     /// </summary>
     /// <returns></returns>
-    public List<Event> GetAllEvents()
+    public List<Event> GetAllEvents(string? title, DateTime? from, DateTime? to)
     {
-        return _events;
+        var query = _events.AsEnumerable();
+
+        if (!string.IsNullOrEmpty(title)) 
+        {
+            query = query.Where(e => e.Title.Contains(title, StringComparison.OrdinalIgnoreCase));
+        }
+        if (from.HasValue) 
+        { 
+            query = query.Where(e => e.StartAt.Date >= from.Value.Date); 
+        }
+        if (to.HasValue)
+        {
+            query = query.Where(e => e.EndAt.Date <= to.Value.Date);
+        }
+        return query.ToList();
     }
 
     /// <summary>
@@ -102,7 +118,7 @@ public class EventService : IEventService
 /// <summary>
 /// Кастомный класс ошибки NotFoundError
 /// </summary>
-public class NotFoundError : Error
+public class NotFoundError : FluentResults.Error
 {
     /// <summary>
     /// Конструктор
@@ -114,7 +130,7 @@ public class NotFoundError : Error
 /// <summary>
 /// Кастомный класс ошибки BadRequestError
 /// </summary>
-public class BadRequestError : Error
+public class BadRequestError : FluentResults.Error
 {
     /// <summary>
     /// Конструктор

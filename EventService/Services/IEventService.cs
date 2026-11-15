@@ -1,4 +1,5 @@
 ﻿using FluentResults;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Sprint1;
 
@@ -11,7 +12,7 @@ public interface IEventService
     /// Получить все события
     /// </summary>
     /// <returns></returns>
-    List<Event> GetAllEvents();
+    List<Event> GetAllEvents(string? title, DateTime? from, DateTime? to);
 
     /// <summary>
     /// Получить событие по ID
