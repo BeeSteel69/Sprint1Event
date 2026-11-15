@@ -1,6 +1,4 @@
 ﻿using FluentResults;
-using Microsoft.AspNetCore.Http.HttpResults;
-using System;
 
 namespace Sprint1;
 /// <summary>
@@ -80,8 +78,6 @@ public class EventService : IEventService
         newEvent.Description = dto.Description;
         newEvent.StartAt = dto.StartAt.Value;
         newEvent.EndAt = dto.EndAt.Value;
-
-        _events[foundIndex] = newEvent;
 
         return Result.Ok(newEvent);             
     }
