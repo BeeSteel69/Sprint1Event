@@ -20,7 +20,7 @@ public class EventService : IEventService
     /// Метод получения всех событий
     /// </summary>
     /// <returns></returns>
-    public PaginatedResult<Event> GetAllEvents(string? title, DateTime? from, DateTime? to, int page, int pageSize)
+    public PaginatedResult<Event> GetAllEvents(string? title, DateTime? from, DateTime? to, int page=1, int pageSize=10)
     {
         var query = _events.AsEnumerable();
 
