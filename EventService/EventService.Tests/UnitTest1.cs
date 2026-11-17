@@ -1,4 +1,4 @@
-﻿using System;
+﻿using Xunit;
 
 namespace Sprint1;
 
@@ -20,7 +20,7 @@ public class UnitTest1
         var result = service.CreateEvent(dto);
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("Test", result.Title);
+        Assert.Equal("Test", result.Value.Title);
     }
 
     /// <summary>
@@ -36,7 +36,7 @@ public class UnitTest1
         var result = service.CreateEvent(dto); 
         var count = service.GetAllEvents(null,null,null).Items.Count;
         // Assert
-        Assert.Null(result); 
+        Assert.IsType<BadRequestError>(result.Errors.First());
         Assert.Equal(0, count); 
     }
 
@@ -68,10 +68,10 @@ public class UnitTest1
         var dto = new EventDto { Title = "Test1", StartAt = DateTime.Now, EndAt = DateTime.Now.AddHours(10), Description = "TestDesc" }; 
         var created = service.CreateEvent(dto);
         // Act
-        var result = service.GetEventById(created.Id);
+        var result = service.GetEventById(created.Value.Id);
         // Assert
         Assert.NotNull(result); 
-        Assert.Equal(created.Id, result.Id);
+        Assert.Equal(created.Value.Id, result.Id);
         Assert.Equal("Test1", result.Title);
     }
 
@@ -99,12 +99,12 @@ public class UnitTest1
         var service = new EventService();
         var dto = new EventDto { Title = "Old", StartAt = DateTime.Now, EndAt = DateTime.Now.AddHours(1) };
         var created = service.CreateEvent(dto);
-        var updateDto = new EventDto { Title = "New", StartAt = created.StartAt, EndAt = created.EndAt };
+        var updateDto = new EventDto { Title = "New", StartAt = created.Value.StartAt, EndAt = created.Value.EndAt };
         // Act
-        var result = service.UpdateEvent(created.Id, updateDto);
+        var result = service.UpdateEvent(created.Value.Id, updateDto);
         // Assert
         Assert.True(result.IsSuccess);
-        Assert.Equal("New", service.GetEventById(created.Id).Title);
+        Assert.Equal("New", service.GetEventById(created.Value.Id).Title);
     }
 
     /// <summary>
@@ -137,8 +137,8 @@ public class UnitTest1
         var created = service.CreateEvent(originalDto);
         var invalidDto = new EventDto{ Title = "", StartAt = DateTime.Now.AddHours(2), EndAt = DateTime.Now.AddHours(1) };
         // Act
-        var result = service.UpdateEvent(created.Id, invalidDto);
-        var updatedEvent = service.GetEventById(created.Id);
+        var result = service.UpdateEvent(created.Value.Id, invalidDto);
+        var updatedEvent = service.GetEventById(created.Value.Id);
         // Assert
         Assert.False(result.IsSuccess);
         Assert.IsType<BadRequestError>(result.Errors.First()); 
@@ -157,12 +157,12 @@ public class UnitTest1
         var dto = new EventDto { Title = "DeleteTest", StartAt = DateTime.Now, EndAt = DateTime.Now.AddHours(2) };
         var created = service.CreateEvent(dto);
         // Act
-        var result = service.DeleteEvent(created.Id);
+        var result = service.DeleteEvent(created.Value.Id);
         var allEvents = service.GetAllEvents(null,null,null);
         // Assert
-        Assert.True(result);
+        Assert.True(result.IsSuccess);
         Assert.Empty(allEvents.Items);
-        Assert.Null(service.GetEventById(created.Id));
+        Assert.Null(service.GetEventById(created.Value.Id));
     }
 
     /// <summary>
@@ -179,7 +179,7 @@ public class UnitTest1
         var result = service.DeleteEvent(-1);
         var allEvents = service.GetAllEvents(null,null,null);
         // Assert
-        Assert.False(result);
+        Assert.False(result.IsSuccess);
         Assert.Single(allEvents.Items);
     }
 

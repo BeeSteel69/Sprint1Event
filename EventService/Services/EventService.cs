@@ -58,18 +58,19 @@ public class EventService : IEventService
     /// Метод добавления события
     /// </summary>
     /// <param name="dto"></param>
-    public Event CreateEvent(EventDto dto)
+    public Result<Event> CreateEvent(EventDto dto)
     {
-        if(dto.EndAt <= dto.StartAt)
+        if (dto.EndAt <= dto.StartAt)
         {
-            return null;
+            // Добавление простой текстовой ошибки
+            return Result.Fail<Event>(new BadRequestError("Дата окончания (EndAt) должна быть строго позже даты начала (StartAt)"));
         }
 
         var newEvent = new Event(dto.Title, dto.StartAt.Value, dto.EndAt.Value, description: dto.Description);
 
         _events.Add(newEvent);
 
-        return newEvent;
+        return Result.Ok(newEvent);
     }
 
     /// <summary>
@@ -105,16 +106,16 @@ public class EventService : IEventService
     /// Метод удаления события по ID
     /// </summary>
     /// <param name="id"></param>
-    public bool DeleteEvent(int id)
+    public Result<Event> DeleteEvent(int id)
     {
         var eventItem= _events.Find(e => e.Id == id);
         if (eventItem == null)
         {
-            return false;
+            return Result.Fail<Event>(new NotFoundError($"Невозможно удалить несуществующее событие {id}"));
         }
 
         _events.Remove(eventItem);
-        return true;
+        return Result.Ok();
     }
 }
 

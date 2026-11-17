@@ -63,16 +63,21 @@ public class EventsController(IEventService _eventsService) : ControllerBase
         }
 
         // Добавляем событие
-        var newEvent = _eventsService.CreateEvent(eventDto);
+        Result<Event> result = _eventsService.CreateEvent(eventDto);
 
-        if (newEvent == null)
-        {
-            //Вернёт статус 400 Bad Request
-            return BadRequest();
-        }
-        
         //Возвращаем 201
-        return CreatedAtAction(nameof(GetEvent), new { id = newEvent.Id }, newEvent);   
+        if (result.IsSuccess)
+        {
+            return Ok(result.Value);
+        }
+                
+        var error = result.Errors.FirstOrDefault();
+
+        return error switch
+        {
+            BadRequestError => BadRequest(new { message = error.Message }),
+            _ => StatusCode(500, new { message = "Произошла внутренняя ошибка сервера." })
+        };
     }
 
     /// <summary>
@@ -121,13 +126,19 @@ public class EventsController(IEventService _eventsService) : ControllerBase
     {
         var result = _eventsService.DeleteEvent(id);
 
-        if (!result)
+        if (result.IsSuccess)
         {
-            // Статус 404
-            return NotFound();
+            // Статус 204
+            return NoContent();            
         }
+        //Если нет, то возвращаем ошибку
+        var error = result.Errors.FirstOrDefault();
 
-        // Статус 204
-        return NoContent();
+        return error switch
+        {
+            NotFoundError => NotFound(new { message = error.Message }),
+            _ => StatusCode(500, new { message = "Произошла внутренняя ошибка сервера." })
+        };
+
     }
 }

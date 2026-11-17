@@ -1,6 +1,4 @@
 ﻿using FluentResults;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Sprint1;
 
@@ -26,7 +24,7 @@ public interface IEventService
     /// Создать событие через Dto
     /// </summary>
     /// <param name="eventDto"></param>
-    Event CreateEvent(EventDto eventDto);
+    Result<Event> CreateEvent(EventDto eventDto);
 
     /// <summary>
     /// Обновить событие через Dto
@@ -39,5 +37,5 @@ public interface IEventService
     /// Удалить событие
     /// </summary>
     /// <param name="id"></param>
-    bool DeleteEvent(int id);
+    Result<Event> DeleteEvent(int id);
 }
