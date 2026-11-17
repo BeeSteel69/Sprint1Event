@@ -79,14 +79,14 @@ public class UnitTest1
     /// Тест получения несуществующего события по ID
     /// </summary>
     [Fact]
-    public void GetEventById_NonExistingId_ReturnsNull()
+    public void GetEventById_NonExistingId_ReturnsFailure()
     {
         // Arrange
         var service = new EventService();
         // Act
         var result = service.GetEventById(-1);
         // Assert
-        Assert.Null(result);
+        Assert.IsType<NotFoundError>(result.Errors.First());
     }
 
     /// <summary>
@@ -150,7 +150,7 @@ public class UnitTest1
     /// Тест удаления существующего события
     /// </summary>
     [Fact]
-    public void DeleteEvent_ExistingId_RemovesEventAndReturnsTrue()
+    public void DeleteEvent_ExistingId_RemovesEventAndReturnsFailure()
     {
         // Arrange
         var service = new EventService();
@@ -159,10 +159,11 @@ public class UnitTest1
         // Act
         var result = service.DeleteEvent(created.Value.Id);
         var allEvents = service.GetAllEvents(null,null,null);
+        var getEvent = service.GetEventById(created.Value.Id);
         // Assert
         Assert.True(result.IsSuccess);
         Assert.Empty(allEvents.Items);
-        Assert.Null(service.GetEventById(created.Value.Id));
+        Assert.IsType<NotFoundError>(getEvent.Errors.First());
     }
 
     /// <summary>
