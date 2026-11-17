@@ -49,9 +49,14 @@ public class EventService : IEventService
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    public Event? GetEventById(int id)
+    public Result<Event> GetEventById(int id)
     {
-        return _events.Find(e => e.Id == id);
+        var eventItem = _events.Find(e => e.Id == id);
+        if (eventItem == null)
+        {
+            return Result.Fail<Event>(new NotFoundError($"Невозможно получить несуществующее событие {id}"));
+        }
+        return Result.Ok(eventItem);
     }
 
     /// <summary>

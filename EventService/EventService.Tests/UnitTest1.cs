@@ -71,8 +71,8 @@ public class UnitTest1
         var result = service.GetEventById(created.Value.Id);
         // Assert
         Assert.NotNull(result); 
-        Assert.Equal(created.Value.Id, result.Id);
-        Assert.Equal("Test1", result.Title);
+        Assert.Equal(created.Value.Id, result.Value.Id);
+        Assert.Equal("Test1", result.Value.Title);
     }
 
     /// <summary>
@@ -104,7 +104,7 @@ public class UnitTest1
         var result = service.UpdateEvent(created.Value.Id, updateDto);
         // Assert
         Assert.True(result.IsSuccess);
-        Assert.Equal("New", service.GetEventById(created.Value.Id).Title);
+        Assert.Equal("New", service.GetEventById(created.Value.Id).Value.Title);
     }
 
     /// <summary>
@@ -142,8 +142,8 @@ public class UnitTest1
         // Assert
         Assert.False(result.IsSuccess);
         Assert.IsType<BadRequestError>(result.Errors.First()); 
-        Assert.Equal("Old", updatedEvent.Title);
-        Assert.Equal(originalDto.StartAt, updatedEvent.StartAt);
+        Assert.Equal("Old", updatedEvent.Value.Title);
+        Assert.Equal(originalDto.StartAt, updatedEvent.Value.StartAt);
     }
 
     /// <summary>

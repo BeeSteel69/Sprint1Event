@@ -18,7 +18,7 @@ public interface IEventService
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    Event? GetEventById(int id);
+    Result<Event> GetEventById(int id);
 
     /// <summary>
     /// Создать событие через Dto

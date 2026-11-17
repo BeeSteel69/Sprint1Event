@@ -38,14 +38,20 @@ public class EventsController(IEventService _eventsService) : ControllerBase
     {
         var eventItem=_eventsService.GetEventById(id);
 
-        if (eventItem == null)
+        if (eventItem.IsSuccess)
         {
-            // Возвращаем 404
-            return NotFound();
+            // Возвращаем 200
+            return Ok(eventItem);            
         }
 
-        // Возвращаем 200
-        return Ok(eventItem);
+        var error = eventItem.Errors.FirstOrDefault();
+
+        return error switch
+        {
+            NotFoundError => NotFound(new { message = error.Message }),
+            _ => StatusCode(500, new { message = "Произошла внутренняя ошибка сервера." })
+        };
+
     }
 
     /// <summary>
