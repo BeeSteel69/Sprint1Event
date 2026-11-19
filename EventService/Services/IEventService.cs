@@ -18,24 +18,24 @@ public interface IEventService
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    Result<Event> GetEventById(int id);
+    Event GetEventById(int id);
 
     /// <summary>
     /// Создать событие через Dto
     /// </summary>
     /// <param name="eventDto"></param>
-    Result<Event> CreateEvent(EventDto eventDto);
+    Event CreateEvent(EventDto eventDto);
 
     /// <summary>
     /// Обновить событие через Dto
     /// </summary>
     /// <param name="id"></param>
     /// <param name="eventDto"></param>
-    Result<Event> UpdateEvent(int id, EventDto eventDto);
+    Event UpdateEvent(int id, EventDto eventDto);
 
     /// <summary>
     /// Удалить событие
     /// </summary>
     /// <param name="id"></param>
-    Result<Event> DeleteEvent(int id);
+    bool DeleteEvent(int id);
 }

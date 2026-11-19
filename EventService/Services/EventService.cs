@@ -1,4 +1,5 @@
-﻿using FluentResults;
+﻿using System.ComponentModel.DataAnnotations;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Sprint1;
 /// <summary>
@@ -49,33 +50,46 @@ public class EventService : IEventService
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    public Result<Event> GetEventById(int id)
+    /// <exception cref="InvalidOperationException"></exception>
+    public Event GetEventById(int id)
     {
         var eventItem = _events.Find(e => e.Id == id);
-        if (eventItem == null)
-        {
-            return Result.Fail<Event>(new NotFoundError($"Невозможно получить несуществующее событие {id}"));
-        }
-        return Result.Ok(eventItem);
+        return eventItem != null ? eventItem : throw new InvalidOperationException("Невозможно получить несуществующее событие");     
     }
 
     /// <summary>
     /// Метод добавления события
     /// </summary>
     /// <param name="dto"></param>
-    public Result<Event> CreateEvent(EventDto dto)
+    /// <returns></returns>
+    /// <exception cref="ValidationException"></exception>
+    public Event CreateEvent(EventDto dto)
     {
+        if (string.IsNullOrWhiteSpace(dto.Title))
+        {
+            throw new ValidationException("Название события обязательно для заполнения");
+        }
+
+        if(dto.StartAt is null or { Year: 1 })
+        {
+            throw new ValidationException("Необходимо указать время начала события");
+        }
+
+        if (dto.EndAt is null or { Year: 1 })
+        {
+            throw new ValidationException("Необходимо указать время окончания события");
+        }
+
         if (dto.EndAt <= dto.StartAt)
         {
-            // Добавление простой текстовой ошибки
-            return Result.Fail<Event>(new BadRequestError("Дата окончания (EndAt) должна быть строго позже даты начала (StartAt)"));
+            throw new ValidationException("Дата окончания (EndAt) должна быть строго позже даты начала (StartAt)");
         }
 
         var newEvent = new Event(dto.Title, dto.StartAt.Value, dto.EndAt.Value, description: dto.Description);
 
         _events.Add(newEvent);
 
-        return Result.Ok(newEvent);
+        return newEvent;
     }
 
     /// <summary>
@@ -83,19 +97,35 @@ public class EventService : IEventService
     /// </summary>
     /// <param name="id"></param>
     /// <param name="dto"></param>
-    /// <exception cref="ArgumentException"></exception>
-    public Result<Event> UpdateEvent(int id, EventDto dto)
+    /// <returns></returns>
+    /// <exception cref="ValidationException"></exception>
+    /// <exception cref="InvalidOperationException"></exception>
+    public Event UpdateEvent(int id, EventDto dto)
     {
+        if (string.IsNullOrWhiteSpace(dto.Title))
+        {
+            throw new ValidationException("Название события обязательно для заполнения");
+        }
+
+        if (dto.StartAt is null or { Year: 1 })
+        {
+            throw new ValidationException("Необходимо указать время начала события");
+        }
+
+        if (dto.EndAt is null or { Year: 1 })
+        {
+            throw new ValidationException("Необходимо указать время окончания события");
+        }
+
+        if (dto.EndAt <= dto.StartAt)
+        {
+            throw new ValidationException("Дата окончания (EndAt) должна быть строго позже даты начала (StartAt)");
+        }
+
         var foundIndex = _events.FindIndex(e => e.Id == id);
         if (foundIndex == -1)
         {
-            return Result.Fail<Event>(new NotFoundError($"Невозможно обновить несуществующее событие {id}"));
-        }
-       
-        if (dto.EndAt <= dto.StartAt)
-        {
-            // Добавление простой текстовой ошибки
-            return Result.Fail<Event>(new BadRequestError("Дата окончания (EndAt) должна быть строго позже даты начала (StartAt)"));
+            throw new InvalidOperationException("Невозможно обновить несуществующее событие");
         }
 
         var newEvent = _events[foundIndex];
@@ -104,46 +134,24 @@ public class EventService : IEventService
         newEvent.StartAt = dto.StartAt.Value;
         newEvent.EndAt = dto.EndAt.Value;
 
-        return Result.Ok(newEvent);             
+        return newEvent;             
     }
 
     /// <summary>
     /// Метод удаления события по ID
     /// </summary>
     /// <param name="id"></param>
-    public Result<Event> DeleteEvent(int id)
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    public bool DeleteEvent(int id)
     {
         var eventItem= _events.Find(e => e.Id == id);
         if (eventItem == null)
         {
-            return Result.Fail<Event>(new NotFoundError($"Невозможно удалить несуществующее событие {id}"));
+            throw new InvalidOperationException("Невозможно удалить несуществующее событие");
         }
 
         _events.Remove(eventItem);
-        return Result.Ok();
+        return true;
     }
-}
-
-/// <summary>
-/// Кастомный класс ошибки NotFoundError
-/// </summary>
-public class NotFoundError : FluentResults.Error
-{
-    /// <summary>
-    /// Конструктор
-    /// </summary>
-    /// <param name="message"></param>
-    public NotFoundError(string message) : base(message) { }
-}
-
-/// <summary>
-/// Кастомный класс ошибки BadRequestError
-/// </summary>
-public class BadRequestError : FluentResults.Error
-{
-    /// <summary>
-    /// Конструктор
-    /// </summary>
-    /// <param name="message"></param>
-    public BadRequestError(string message) : base(message) { }
 }

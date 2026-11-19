@@ -1,4 +1,5 @@
-﻿using Xunit;
+﻿using System.ComponentModel.DataAnnotations;
+using Xunit;
 
 namespace Sprint1;
 
@@ -20,24 +21,41 @@ public class UnitTest1
         var result = service.CreateEvent(dto);
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("Test", result.Value.Title);
+        Assert.Equal("Test", result.Title);
     }
 
     /// <summary>
     /// Тест создания события с некорректными данными
     /// </summary>
-    [Fact]
-    public void CreateEvent_InvalidDates_ReturnsNullAndDoesNotAdd()
-    { 
+    [Theory]
+    [InlineData("EmptyTitle", "Название события обязательно для заполнения")]
+    [InlineData("NullStart", "Необходимо указать время начала события")]
+    [InlineData("DefaultStart", "Необходимо указать время начала события")]
+    [InlineData("NullEnd", "Необходимо указать время окончания события")]
+    [InlineData("EndBeforeStart", "Дата окончания (EndAt) должна быть строго позже даты начала (StartAt)")]
+    public void CreateEvent_InvalidScenarios_ThrowsValidationExceptionWithExpectedMessage(string scenario, string expectedMessage)
+    {
         // Arrange
-        var service = new EventService(); 
-        var dto = new EventDto { Title = "", StartAt = DateTime.Now, EndAt = DateTime.Now.AddHours(-1) };
+        var service = new EventService();
+        var validStart = new DateTime(2026, 11, 20, 10, 0, 0);
+        var validEnd = new DateTime(2026, 11, 20, 12, 0, 0);
+
+        var dto = scenario switch
+        {
+            "EmptyTitle" => new EventDto { Title = "", StartAt = validStart, EndAt = validEnd },
+            "NullStart" => new EventDto { Title = "Тест", StartAt = null, EndAt = validEnd },
+            "DefaultStart" => new EventDto { Title = "Тест", StartAt = default(DateTime), EndAt = validEnd },
+            "NullEnd" => new EventDto { Title = "Тест", StartAt = validStart, EndAt = null },
+            "EndBeforeStart" => new EventDto { Title = "Тест", StartAt = validEnd, EndAt = validStart },
+            _ => throw new ArgumentOutOfRangeException(nameof(scenario))
+        };
+
         // Act
-        var result = service.CreateEvent(dto); 
-        var count = service.GetAllEvents(null,null,null).Items.Count;
+        Action act = () => service.CreateEvent(dto);
+
         // Assert
-        Assert.IsType<BadRequestError>(result.Errors.First());
-        Assert.Equal(0, count); 
+        var ex = Assert.Throws<ValidationException>(act);
+        Assert.Equal(expectedMessage, ex.Message);
     }
 
     /// <summary>
@@ -68,25 +86,26 @@ public class UnitTest1
         var dto = new EventDto { Title = "Test1", StartAt = DateTime.Now, EndAt = DateTime.Now.AddHours(10), Description = "TestDesc" }; 
         var created = service.CreateEvent(dto);
         // Act
-        var result = service.GetEventById(created.Value.Id);
+        var result = service.GetEventById(created.Id);
         // Assert
         Assert.NotNull(result); 
-        Assert.Equal(created.Value.Id, result.Value.Id);
-        Assert.Equal("Test1", result.Value.Title);
+        Assert.Equal(created.Id, result.Id);
+        Assert.Equal("Test1", result.Title);
     }
 
     /// <summary>
     /// Тест получения несуществующего события по ID
     /// </summary>
     [Fact]
-    public void GetEventById_NonExistingId_ReturnsFailure()
+    public void GetEventById_NonExistingId_ThrowsInvalidOperationExceptionWithExpectedMessage()
     {
         // Arrange
         var service = new EventService();
         // Act
-        var result = service.GetEventById(-1);
+        Action act = () => service.GetEventById(-1);
         // Assert
-        Assert.IsType<NotFoundError>(result.Errors.First());
+        var ex = Assert.Throws<InvalidOperationException>(act);
+        Assert.Equal("Невозможно получить несуществующее событие", ex.Message);
     }
 
     /// <summary>
@@ -99,51 +118,63 @@ public class UnitTest1
         var service = new EventService();
         var dto = new EventDto { Title = "Old", StartAt = DateTime.Now, EndAt = DateTime.Now.AddHours(1) };
         var created = service.CreateEvent(dto);
-        var updateDto = new EventDto { Title = "New", StartAt = created.Value.StartAt, EndAt = created.Value.EndAt };
+        var updateDto = new EventDto { Title = "New", StartAt = created.StartAt, EndAt = created.EndAt };
         // Act
-        var result = service.UpdateEvent(created.Value.Id, updateDto);
+        var result = service.UpdateEvent(created.Id, updateDto);
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal("New", service.GetEventById(created.Value.Id).Value.Title);
+        Assert.NotNull(result);
+        Assert.Equal("New", service.GetEventById(created.Id).Title);
     }
 
     /// <summary>
     /// Тест обновления несуществующего события
     /// </summary>
     [Fact]
-    public void UpdateEvent_NonExistingId_ReturnsFailure()
+    public void UpdateEvent_NonExistingId_ThrowsInvalidOperationExceptionWithExpectedMessage()
     { 
         // Arrange
         var service = new EventService(); 
         var dto = new EventDto { Title = "New Event", StartAt = DateTime.Now, EndAt = DateTime.Now.AddHours(1) }; 
         var initialCount = service.GetAllEvents(null,null,null).Items.Count;
         // Act
-        var result = service.UpdateEvent(-1, dto);
+        Action act = () => service.UpdateEvent(-1, dto);
         // Assert
-        Assert.False(result.IsSuccess); 
-        Assert.IsType<NotFoundError>(result.Errors.First()); 
-        Assert.Equal(initialCount, service.GetAllEvents(null, null, null).Items.Count); 
+        var ex = Assert.Throws<InvalidOperationException>(act);
+        Assert.Equal("Невозможно обновить несуществующее событие", ex.Message);
+        Assert.Equal(initialCount, service.GetAllEvents(null, null, null).Items.Count);
     }
 
     /// <summary>
-    /// Тест обновления события с некорректными датами
+    /// Тест обновления события с некорректными данными
     /// </summary>
-    [Fact]
-    public void UpdateEvent_InvalidDates_ReturnsBadRequestAndDoesNotChange()
+    [Theory]
+    [InlineData("EmptyTitle", "Название события обязательно для заполнения")]
+    [InlineData("NullStart", "Необходимо указать время начала события")]
+    [InlineData("DefaultStart", "Необходимо указать время начала события")]
+    [InlineData("NullEnd", "Необходимо указать время окончания события")]
+    [InlineData("EndBeforeStart", "Дата окончания (EndAt) должна быть строго позже даты начала (StartAt)")]
+    public void UpdateEvent_InvalidDates_ThrowsValidationOperationExceptionWithExpectedMessage(string scenario, string expectedMessage)
     { 
         // Arrange
         var service = new EventService(); 
         var originalDto = new EventDto { Title = "Old", StartAt = DateTime.Now, EndAt = DateTime.Now.AddHours(1) }; 
         var created = service.CreateEvent(originalDto);
-        var invalidDto = new EventDto{ Title = "", StartAt = DateTime.Now.AddHours(2), EndAt = DateTime.Now.AddHours(1) };
+        var validStart = new DateTime(2026, 11, 20, 10, 0, 0);
+        var validEnd = new DateTime(2026, 11, 20, 12, 0, 0);
+        var invalidDto = scenario switch
+        {
+            "EmptyTitle" => new EventDto { Title = "", StartAt = validStart, EndAt = validEnd },
+            "NullStart" => new EventDto { Title = "Тест", StartAt = null, EndAt = validEnd },
+            "DefaultStart" => new EventDto { Title = "Тест", StartAt = default(DateTime), EndAt = validEnd },
+            "NullEnd" => new EventDto { Title = "Тест", StartAt = validStart, EndAt = null },
+            "EndBeforeStart" => new EventDto { Title = "Тест", StartAt = validEnd, EndAt = validStart },
+            _ => throw new ArgumentOutOfRangeException(nameof(scenario))
+        };
         // Act
-        var result = service.UpdateEvent(created.Value.Id, invalidDto);
-        var updatedEvent = service.GetEventById(created.Value.Id);
+        Action act = () => service.UpdateEvent(created.Id, invalidDto);
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.IsType<BadRequestError>(result.Errors.First()); 
-        Assert.Equal("Old", updatedEvent.Value.Title);
-        Assert.Equal(originalDto.StartAt, updatedEvent.Value.StartAt);
+        var ex = Assert.Throws<ValidationException>(act);
+        Assert.Equal(expectedMessage, ex.Message);
     }
 
     /// <summary>
@@ -157,30 +188,29 @@ public class UnitTest1
         var dto = new EventDto { Title = "DeleteTest", StartAt = DateTime.Now, EndAt = DateTime.Now.AddHours(2) };
         var created = service.CreateEvent(dto);
         // Act
-        var result = service.DeleteEvent(created.Value.Id);
+        var result = service.DeleteEvent(created.Id);
         var allEvents = service.GetAllEvents(null,null,null);
-        var getEvent = service.GetEventById(created.Value.Id);
         // Assert
-        Assert.True(result.IsSuccess);
+        Assert.True(result);
         Assert.Empty(allEvents.Items);
-        Assert.IsType<NotFoundError>(getEvent.Errors.First());
     }
 
     /// <summary>
     /// Тест удаления несуществующего события
     /// </summary>
     [Fact]
-    public void DeleteEvent_NonExistingId_ReturnsFalseAndDoesNotChangeList()
+    public void DeleteEvent_NonExistingId_ThrowsInvalidOperationExceptionWithExpectedMessage()
     {
         // Arrange
         var service = new EventService();
         var dto = new EventDto { Title = "DeleteTest", StartAt = DateTime.Now, EndAt = DateTime.Now.AddHours(2) };
         service.CreateEvent(dto);
         // Act
-        var result = service.DeleteEvent(-1);
+        Action act = () => service.DeleteEvent(-1);
         var allEvents = service.GetAllEvents(null,null,null);
         // Assert
-        Assert.False(result.IsSuccess);
+        var ex = Assert.Throws<InvalidOperationException>(act);
+        Assert.Equal("Невозможно удалить несуществующее событие", ex.Message);
         Assert.Single(allEvents.Items);
     }
 

@@ -36,22 +36,7 @@ public class EventsController(IEventService _eventsService) : ControllerBase
     [HttpGet("{id:int}")]
     public ActionResult<Event> GetEvent(int id)
     {
-        var eventItem=_eventsService.GetEventById(id);
-
-        if (eventItem.IsSuccess)
-        {
-            // Возвращаем 200
-            return Ok(eventItem);            
-        }
-
-        var error = eventItem.Errors.FirstOrDefault();
-
-        return error switch
-        {
-            NotFoundError => NotFound(new { message = error.Message }),
-            _ => StatusCode(500, new { message = "Произошла внутренняя ошибка сервера." })
-        };
-
+       return Ok(_eventsService.GetEventById(id));
     }
 
     /// <summary>
@@ -62,28 +47,7 @@ public class EventsController(IEventService _eventsService) : ControllerBase
     [HttpPost]
     public IActionResult Create([FromBody] EventDto eventDto)
     {
-        if (!ModelState.IsValid)
-        {
-            // Вернёт статус 400 Bad Request и JSON со списком ошибок
-            return BadRequest(ModelState);
-        }
-
-        // Добавляем событие
-        Result<Event> result = _eventsService.CreateEvent(eventDto);
-
-        //Возвращаем 201
-        if (result.IsSuccess)
-        {
-            return Ok(result.Value);
-        }
-                
-        var error = result.Errors.FirstOrDefault();
-
-        return error switch
-        {
-            BadRequestError => BadRequest(new { message = error.Message }),
-            _ => StatusCode(500, new { message = "Произошла внутренняя ошибка сервера." })
-        };
+        return StatusCode(StatusCodes.Status201Created, _eventsService.CreateEvent(eventDto));
     }
 
     /// <summary>
@@ -95,31 +59,7 @@ public class EventsController(IEventService _eventsService) : ControllerBase
     [HttpPut("{id:int}")]
     public IActionResult Update(int id,[FromBody] EventDto eventDto)
     {
-        //Валидность входных данных (Required)
-        if (!ModelState.IsValid)
-        {
-            // Вернёт статус 400 Bad Request и JSON со списком ошибок
-            return BadRequest(ModelState);
-        }
-
-        //Обновляем событие
-        Result<Event> result = _eventsService.UpdateEvent(id, eventDto);
-
-        //Если всё ок - 200
-        if (result.IsSuccess)
-        {
-            return Ok(result.Value);
-        }
-
-        //Если нет, то возвращаем ошибку
-        var error = result.Errors.FirstOrDefault();
-
-        return error switch
-        {
-            NotFoundError => NotFound(new { message = error.Message }),
-            BadRequestError => BadRequest(new { message = error.Message }),
-            _ => StatusCode(500, new { message = "Произошла внутренняя ошибка сервера." })
-        };
+        return Ok(_eventsService.UpdateEvent(id, eventDto));
     }
 
     /// <summary>
@@ -130,21 +70,7 @@ public class EventsController(IEventService _eventsService) : ControllerBase
     [HttpDelete("{id:int}")]
     public IActionResult Delete(int id)
     {
-        var result = _eventsService.DeleteEvent(id);
-
-        if (result.IsSuccess)
-        {
-            // Статус 204
-            return NoContent();            
-        }
-        //Если нет, то возвращаем ошибку
-        var error = result.Errors.FirstOrDefault();
-
-        return error switch
-        {
-            NotFoundError => NotFound(new { message = error.Message }),
-            _ => StatusCode(500, new { message = "Произошла внутренняя ошибка сервера." })
-        };
-
+        _eventsService.DeleteEvent(id);
+        return NoContent();
     }
 }
