@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
 using System.ComponentModel.DataAnnotations;
 
 namespace Sprint1;
@@ -57,12 +58,14 @@ public class GlobalExceptionHandlingMiddleware
         var statusCode = MapStatusCode(ex);
 
         httpContext.Response.StatusCode = statusCode;
-        httpContext.Response.ContentType = "application/json";
+        httpContext.Response.ContentType = "application/problem+json";
 
         var error = new ProblemDetails
         {
             Status = statusCode,
-            Detail = ex.Message
+            Title = ReasonPhrases.GetReasonPhrase(statusCode),
+            Detail = ex.Message,
+            Instance = httpContext.Request.Path
         };
 
         await httpContext.Response.WriteAsJsonAsync(error);
@@ -71,8 +74,12 @@ public class GlobalExceptionHandlingMiddleware
     private static int MapStatusCode(Exception ex)
         => ex switch
         {
-            ValidationException ve => StatusCodes.Status400BadRequest,
-            InvalidOperationException nfe => StatusCodes.Status404NotFound,
+            //ValidationException => StatusCodes.Status400BadRequest,
+            //InvalidOperationException => StatusCodes.Status404NotFound,
+            //_ => StatusCodes.Status500InternalServerError
+            ValidationException => StatusCodes.Status400BadRequest,
+            ArgumentException => StatusCodes.Status400BadRequest,
+            InvalidOperationException => StatusCodes.Status404NotFound,
             _ => StatusCodes.Status500InternalServerError
         };
 }
