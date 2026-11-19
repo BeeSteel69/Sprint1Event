@@ -6,7 +6,7 @@ namespace Sprint1;
 /// <summary>
 /// Класс Unit тестов для EventService
 /// </summary>
-public class UnitTest1
+public class EventServiceTests
 {
     /// <summary>
     /// Тест успешного создания события
@@ -65,13 +65,13 @@ public class UnitTest1
     public void GetAllEvents_ReturnsAllStoredEvents()
     {
         // Arrange
-        var service = new EventService(); 
+        var service = new EventService();
         var dto = new EventDto { Title = "Test", StartAt = DateTime.Now, EndAt = DateTime.Now.AddHours(10), Description = "TestDesc" };
         // Act
-        service.CreateEvent(dto); 
-        var events = service.GetAllEvents(null,null,null);
+        service.CreateEvent(dto);
+        var events = service.GetAllEvents(null, null, null);
         // Assert
-        Assert.Single(events.Items); 
+        Assert.Single(events.Items);
         Assert.Equal("Test", events.Items[0].Title);
     }
 
@@ -82,13 +82,13 @@ public class UnitTest1
     public void GetEventById_ExistingId_ReturnsEvent()
     {
         // Arrange
-        var service = new EventService(); 
-        var dto = new EventDto { Title = "Test1", StartAt = DateTime.Now, EndAt = DateTime.Now.AddHours(10), Description = "TestDesc" }; 
+        var service = new EventService();
+        var dto = new EventDto { Title = "Test1", StartAt = DateTime.Now, EndAt = DateTime.Now.AddHours(10), Description = "TestDesc" };
         var created = service.CreateEvent(dto);
         // Act
         var result = service.GetEventById(created.Id);
         // Assert
-        Assert.NotNull(result); 
+        Assert.NotNull(result);
         Assert.Equal(created.Id, result.Id);
         Assert.Equal("Test1", result.Title);
     }
@@ -131,11 +131,11 @@ public class UnitTest1
     /// </summary>
     [Fact]
     public void UpdateEvent_NonExistingId_ThrowsInvalidOperationExceptionWithExpectedMessage()
-    { 
+    {
         // Arrange
-        var service = new EventService(); 
-        var dto = new EventDto { Title = "New Event", StartAt = DateTime.Now, EndAt = DateTime.Now.AddHours(1) }; 
-        var initialCount = service.GetAllEvents(null,null,null).Items.Count;
+        var service = new EventService();
+        var dto = new EventDto { Title = "New Event", StartAt = DateTime.Now, EndAt = DateTime.Now.AddHours(1) };
+        var initialCount = service.GetAllEvents(null, null, null).Items.Count;
         // Act
         Action act = () => service.UpdateEvent(-1, dto);
         // Assert
@@ -154,10 +154,10 @@ public class UnitTest1
     [InlineData("NullEnd", "Необходимо указать время окончания события")]
     [InlineData("EndBeforeStart", "Дата окончания (EndAt) должна быть строго позже даты начала (StartAt)")]
     public void UpdateEvent_InvalidDates_ThrowsValidationOperationExceptionWithExpectedMessage(string scenario, string expectedMessage)
-    { 
+    {
         // Arrange
-        var service = new EventService(); 
-        var originalDto = new EventDto { Title = "Old", StartAt = DateTime.Now, EndAt = DateTime.Now.AddHours(1) }; 
+        var service = new EventService();
+        var originalDto = new EventDto { Title = "Old", StartAt = DateTime.Now, EndAt = DateTime.Now.AddHours(1) };
         var created = service.CreateEvent(originalDto);
         var validStart = new DateTime(2026, 11, 20, 10, 0, 0);
         var validEnd = new DateTime(2026, 11, 20, 12, 0, 0);
@@ -189,7 +189,7 @@ public class UnitTest1
         var created = service.CreateEvent(dto);
         // Act
         var result = service.DeleteEvent(created.Id);
-        var allEvents = service.GetAllEvents(null,null,null);
+        var allEvents = service.GetAllEvents(null, null, null);
         // Assert
         Assert.True(result);
         Assert.Empty(allEvents.Items);
@@ -207,7 +207,7 @@ public class UnitTest1
         service.CreateEvent(dto);
         // Act
         Action act = () => service.DeleteEvent(-1);
-        var allEvents = service.GetAllEvents(null,null,null);
+        var allEvents = service.GetAllEvents(null, null, null);
         // Assert
         var ex = Assert.Throws<InvalidOperationException>(act);
         Assert.Equal("Невозможно удалить несуществующее событие", ex.Message);
@@ -226,7 +226,7 @@ public class UnitTest1
         service.CreateEvent(new EventDto { Title = "Event Big", StartAt = DateTime.Now, EndAt = DateTime.Now.AddHours(2) });
         service.CreateEvent(new EventDto { Title = "Event BiggieSmalls", StartAt = DateTime.Now, EndAt = DateTime.Now.AddHours(2) });
         // Act
-        var result = service.GetAllEvents("small",null,null);
+        var result = service.GetAllEvents("small", null, null);
         // Assert
         Assert.Equal(2, result.Items.Count);
         Assert.Contains(result.Items, e => e.Title.Equals("Event Small", StringComparison.OrdinalIgnoreCase));
@@ -238,7 +238,7 @@ public class UnitTest1
     /// </summary>
     [Fact]
     public void GetFilteredEvents_ByDateRange_ReturnsCorrectEvents()
-    { 
+    {
         // Arrange
         var service = new EventService(); var baseTime = DateTime.Now.Date;
         service.CreateEvent(new EventDto { Title = "Before", StartAt = baseTime.AddDays(-2), EndAt = baseTime.AddDays(-1) });
@@ -248,10 +248,10 @@ public class UnitTest1
         var endDate = baseTime.AddDays(1);
         // Act 
         // Предполагаем, что у сервиса есть метод с параметрами startDate/endDate
-        var result = service.GetAllEvents(null,startDate,endDate);
+        var result = service.GetAllEvents(null, startDate, endDate);
         // Assert
         Assert.Single(result.Items);
-        Assert.Equal("Inside", result.Items[0].Title); 
+        Assert.Equal("Inside", result.Items[0].Title);
     }
 
     /// <summary>
@@ -259,14 +259,14 @@ public class UnitTest1
     /// </summary>
     [Fact]
     public void GetPagedEvents_ReturnsCorrectPage()
-    { 
+    {
         // Arrange
         var service = new EventService();
-        for (int i = 0; i < 25; i++) 
+        for (int i = 0; i < 25; i++)
             service.CreateEvent(new EventDto { Title = $"Event {i}", StartAt = DateTime.Now, EndAt = DateTime.Now.AddHours(1) });
         int page = 2, pageSize = 10;
         // Act
-        var result = service.GetAllEvents(null,null,null, page, pageSize);
+        var result = service.GetAllEvents(null, null, null, page, pageSize);
         // Assert
         Assert.Equal(10, result.Items.Count);
         Assert.Equal(25, result.TotalCount);
@@ -282,8 +282,8 @@ public class UnitTest1
     public void GetFilteredEvents_CombinedFilters_AppliesAllConditions()
     {
         // Arrange
-        var service = new EventService(); 
-        service.CreateEvent(new EventDto { Title = "Match", StartAt = DateTime.Now, EndAt = DateTime.Now.AddHours(1) }); 
+        var service = new EventService();
+        service.CreateEvent(new EventDto { Title = "Match", StartAt = DateTime.Now, EndAt = DateTime.Now.AddHours(1) });
         service.CreateEvent(new EventDto { Title = "NoTitle", StartAt = DateTime.Now, EndAt = DateTime.Now.AddHours(1) });
         service.CreateEvent(new EventDto { Title = "Match", StartAt = DateTime.Now.AddDays(-5), EndAt = DateTime.Now.AddDays(-4) });
 
@@ -291,8 +291,8 @@ public class UnitTest1
         var result = service.GetAllEvents("match", DateTime.Now.Date, DateTime.Now.AddHours(1), 1, 10);
         // Assert
         Assert.Equal(1, result.TotalCount);
-        Assert.Single(result.Items); 
-        Assert.Equal("Match", result.Items[0].Title); 
+        Assert.Single(result.Items);
+        Assert.Equal("Match", result.Items[0].Title);
     }
 
 }
