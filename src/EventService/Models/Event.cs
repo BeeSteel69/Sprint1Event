@@ -42,9 +42,9 @@ public class Event
     /// <param name="startAt"></param>
     /// <param name="endAt"></param>
     /// <param name="description"></param>
-    public Event(string tittle,  DateTime startAt, DateTime endAt, string? description = "")
-    { 
-        Id= Interlocked.Increment(ref _counter);
+    public Event(string tittle, DateTime startAt, DateTime endAt, string? description = "")
+    {
+        Id = Interlocked.Increment(ref _counter);
         Title = tittle;
         Description = description;
         StartAt = startAt;

@@ -74,7 +74,7 @@ public class GlobalExceptionHandlingMiddleware
     private static int MapStatusCode(Exception ex)
         => ex switch
         {
-            ValidationException => StatusCodes.Status400BadRequest,            
+            ValidationException => StatusCodes.Status400BadRequest,
             InvalidOperationException => StatusCodes.Status404NotFound,
             _ => StatusCodes.Status500InternalServerError
         };

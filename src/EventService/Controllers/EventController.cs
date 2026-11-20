@@ -16,13 +16,13 @@ public class EventsController(IEventService _eventsService) : ControllerBase
     /// <returns></returns>
     [HttpGet]
     public ActionResult<List<Event>> GetAllEvents(
-        [FromQuery] string? title, 
-        [FromQuery] DateTime? from, 
+        [FromQuery] string? title,
+        [FromQuery] DateTime? from,
         [FromQuery] DateTime? to,
-        [FromQuery] int page = 1, 
+        [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10)
     {
-        return Ok(_eventsService.GetAllEvents(title,from,to,page,pageSize));
+        return Ok(_eventsService.GetAllEvents(title, from, to, page, pageSize));
     }
 
     /// <summary>
@@ -35,7 +35,7 @@ public class EventsController(IEventService _eventsService) : ControllerBase
     [HttpGet("{id:int}")]
     public ActionResult<Event> GetEvent(int id)
     {
-       return Ok(_eventsService.GetEventById(id));
+        return Ok(_eventsService.GetEventById(id));
     }
 
     /// <summary>
@@ -56,7 +56,7 @@ public class EventsController(IEventService _eventsService) : ControllerBase
     /// <param name="eventDto"></param>
     /// <returns></returns>
     [HttpPut("{id:int}")]
-    public IActionResult Update(int id,[FromBody] EventDto eventDto)
+    public IActionResult Update(int id, [FromBody] EventDto eventDto)
     {
         return Ok(_eventsService.UpdateEvent(id, eventDto));
     }

@@ -10,7 +10,7 @@ public class EventService : IEventService
     /// <summary>
     /// Коллекция для работы с событиями
     /// </summary>
-    private readonly List<Event> _events= [];
+    private readonly List<Event> _events = [];
 
     /// <summary>
     /// Конструктор сервиса Event (по умолчанию)
@@ -21,17 +21,17 @@ public class EventService : IEventService
     /// Метод получения всех событий
     /// </summary>
     /// <returns></returns>
-    public PaginatedResult<Event> GetAllEvents(string? title, DateTime? from, DateTime? to, int page=1, int pageSize=10)
+    public PaginatedResult<Event> GetAllEvents(string? title, DateTime? from, DateTime? to, int page = 1, int pageSize = 10)
     {
         var query = _events.AsEnumerable();
 
-        if (!string.IsNullOrEmpty(title)) 
+        if (!string.IsNullOrEmpty(title))
         {
             query = query.Where(e => e.Title.Contains(title, StringComparison.OrdinalIgnoreCase));
         }
-        if (from.HasValue) 
-        { 
-            query = query.Where(e => e.StartAt.Date >= from.Value.Date); 
+        if (from.HasValue)
+        {
+            query = query.Where(e => e.StartAt.Date >= from.Value.Date);
         }
         if (to.HasValue)
         {
@@ -54,7 +54,7 @@ public class EventService : IEventService
     public Event GetEventById(int id)
     {
         var eventItem = _events.Find(e => e.Id == id);
-        return eventItem != null ? eventItem : throw new InvalidOperationException("Невозможно получить несуществующее событие");     
+        return eventItem != null ? eventItem : throw new InvalidOperationException("Невозможно получить несуществующее событие");
     }
 
     /// <summary>
@@ -70,7 +70,7 @@ public class EventService : IEventService
             throw new ValidationException("Название события обязательно для заполнения");
         }
 
-        if(dto.StartAt is null or { Year: 1 })
+        if (dto.StartAt is null or { Year: 1 })
         {
             throw new ValidationException("Необходимо указать время начала события");
         }
@@ -134,7 +134,7 @@ public class EventService : IEventService
         newEvent.StartAt = dto.StartAt.Value;
         newEvent.EndAt = dto.EndAt.Value;
 
-        return newEvent;             
+        return newEvent;
     }
 
     /// <summary>
@@ -145,7 +145,7 @@ public class EventService : IEventService
     /// <exception cref="InvalidOperationException"></exception>
     public bool DeleteEvent(int id)
     {
-        var eventItem= _events.Find(e => e.Id == id);
+        var eventItem = _events.Find(e => e.Id == id);
         if (eventItem == null)
         {
             throw new InvalidOperationException("Невозможно удалить несуществующее событие");
