@@ -13,6 +13,11 @@ public class EventsController(IEventService _eventsService) : ControllerBase
     /// <summary>
     /// Получить все события
     /// </summary>
+    /// <param name="title"></param>
+    /// <param name="from"></param>
+    /// <param name="to"></param>
+    /// <param name="page"></param>
+    /// <param name="pageSize"></param>
     /// <returns></returns>
     [HttpGet]
     public ActionResult<List<Event>> GetAllEvents(
@@ -28,9 +33,8 @@ public class EventsController(IEventService _eventsService) : ControllerBase
     /// <summary>
     /// Метод возвращает событие по id
     /// </summary>
-    /// <param name="id">Параметр индекса, для события</param>
-    /// <response code="200">Возвращается JSON-структура ApiBaseResult с деталями ответа
-    /// и HTTP статус-кодом 200 Ok в случае успеха</response>
+    /// <param name="id"></param>
+    /// <returns></returns>
     [Produces("application/json")]
     [HttpGet("{id:int}")]
     public ActionResult<Event> GetEvent(int id)

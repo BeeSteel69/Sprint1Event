@@ -23,6 +23,16 @@ public class EventService : IEventService
     /// <returns></returns>
     public PaginatedResult<Event> GetAllEvents(string? title, DateTime? from, DateTime? to, int page = 1, int pageSize = 10)
     {
+        if (page < 1 || pageSize < 1)
+        {
+            throw new ValidationException("Номер страницы (page) должен быть >= 1");
+        }
+
+        if (page < 1 || pageSize < 1)
+        {
+            throw new ValidationException("Размер страницы (pageSize) должен быть >= 1");
+        }
+
         var query = _events.AsEnumerable();
 
         if (!string.IsNullOrEmpty(title))
