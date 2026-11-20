@@ -1,6 +1,4 @@
-﻿using FluentResults;
-
-namespace Sprint1;
+﻿namespace Sprint1;
 
 /// <summary>
 /// Интерфейс Event
