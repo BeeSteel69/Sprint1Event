@@ -1,6 +1,4 @@
-﻿using FluentResults;
-
-namespace Sprint1;
+﻿namespace Sprint1;
 
 /// <summary>
 /// Интерфейс Event
@@ -11,14 +9,14 @@ public interface IEventService
     /// Получить все события
     /// </summary>
     /// <returns></returns>
-    List<Event> GetAllEvents();
+    PaginatedResult<Event> GetAllEvents(string? title, DateTime? from, DateTime? to, int page, int pageSize);
 
     /// <summary>
     /// Получить событие по ID
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    Event? GetEventById(int id);
+    Event GetEventById(int id);
 
     /// <summary>
     /// Создать событие через Dto
@@ -31,7 +29,7 @@ public interface IEventService
     /// </summary>
     /// <param name="id"></param>
     /// <param name="eventDto"></param>
-    Result<Event> UpdateEvent(int id, EventDto eventDto);
+    Event UpdateEvent(int id, EventDto eventDto);
 
     /// <summary>
     /// Удалить событие
